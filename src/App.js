@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen from "./screens/HomeScreen";
 import RegisterScreen from "./screens/RegisterScreen";
-import RegisterDetailScreen from './screens/RegisterDetailsScreen'
+import RegisterDetailScreen from "./screens/RegisterDetailsScreen";
+import UserProfile from "./screens/UserProfile";
 import NavBar from "./components/Navbar";
 import "./App.css";
 
@@ -24,6 +25,11 @@ function App() {
 						exact
 						path="/register-details/"
 						element={<RegisterDetailScreen />}
+					/>
+					<Route
+						exact
+						path="/user/profile/"
+						element={<UserProfile />}
 					/>
 				</Routes>
 			</Router>

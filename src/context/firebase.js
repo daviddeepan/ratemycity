@@ -37,29 +37,33 @@ const firestore = getFirestore(firebaseapp);
 export const FirebaseProvider = (props) => {
 	const [user, setUser] = useState(null);
 
+	//checking auth status
 	useEffect(() => {
-		//checking auth status
 		onAuthStateChanged(firebaseauth, (user) => {
 			if (user) setUser(user);
 			else setUser(null);
 		});
 	}, []);
 
+	// register context
 	const signupWithEmailAndPassword = (email, password) => {
-		return createUserWithEmailAndPassword(firebaseauth, email, password); // register context
+		return createUserWithEmailAndPassword(firebaseauth, email, password);
 	};
 
+	//login context
 	const signinUserWithEmailAndPassword = (email, password) => {
-		return signInWithEmailAndPassword(firebaseauth, email, password); //login context
+		return signInWithEmailAndPassword(firebaseauth, email, password);
 	};
 
+	//signout context
 	const signOutUser = () => {
 		return signOut(firebaseauth).then(() => {
 			setUser(null);
-		}); //signout context
+		});
 	};
+
+	//user-profile
 	const putUserProfile = async (firstName, lastName, city, userName) => {
-		//user-profile
 		try {
 			return await addDoc(collection(firestore, "user-profile"), {
 				userId: user.uid,
@@ -82,14 +86,13 @@ export const FirebaseProvider = (props) => {
 	//validate username
 	async function validateUserName(username) {
 		const userRef = collection(firestore, "user-profile");
-		const q = query(userRef, where("userName" == username));
+		const q = query(userRef, where("userName", "==", username));
 
 		const querySnapshot = await getDocs(q);
-		if (querySnapshot.size > 0) {
-			return "Username is already in use";
-		}
 
-		return "Username is available";
+		if (querySnapshot.empty) {
+			return true;
+		} else return false;
 	}
 
 	const isLoggedIn = user ? true : false;

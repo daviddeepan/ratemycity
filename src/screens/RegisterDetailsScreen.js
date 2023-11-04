@@ -1,9 +1,10 @@
-import { React, useEffect } from "react";
+import { React } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "react-bootstrap/Button";
 import Col from "react-bootstrap/Col";
 import InputGroup from "react-bootstrap/InputGroup";
+import CityApi from "../components/cityapi";
 
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
@@ -11,30 +12,41 @@ import { Formik } from "formik";
 import * as yup from "yup";
 
 import { useFirebase } from "../context/firebase";
-import { use } from "swup/dist/types/modules/plugins";
 
 function RegisterDetailScreen() {
 	const firebase = useFirebase();
 	const navigate = useNavigate();
 
-	// useEffect(() => {
-	// 	firebase.getUserProfile().then((profile) => {
-	// 		console.log(profile.docs[0].data());
-	// 	});
-	// }, []);
-
 	const schema = yup.object().shape({
 		firstName: yup.string().required(),
 		lastName: yup.string().required(),
-		city: yup.string().required(),
 		username: yup
 			.string()
 			.required()
 			.test(
 				"userNameServerValidation",
-				"Username already in use", // <- key, message
-				function (username) {
-					return new Promise((resolve, reject) => {});
+				"Username already in use",
+				async function (username) {
+					try {
+						const isUserNameTaken = await firebase.validateUserName(
+							username
+						);
+						if (isUserNameTaken === false) {
+							throw new yup.ValidationError(
+								"Username already in use",
+								username,
+								"username"
+							);
+						} else {
+							return true;
+						}
+					} catch (error) {
+						throw new yup.ValidationError(
+							`ERROR: Unexpected error occurred while validating username (${error}).`,
+							username,
+							"username"
+						);
+					}
 				}
 			),
 	});
@@ -72,6 +84,7 @@ function RegisterDetailScreen() {
 				touched,
 				errors,
 				isSubmitting,
+				setFieldValue,
 			}) => (
 				<div className="container">
 					<h2 className="m-5 p-5">Complete Registration</h2>
@@ -154,17 +167,8 @@ function RegisterDetailScreen() {
 								controlId="validationFormik03"
 							>
 								<Form.Label>City</Form.Label>
-								<Form.Control
-									type="text"
-									name="city"
-									value={values.city}
-									onChange={handleChange}
-									isInvalid={!!errors.city}
-								/>
 
-								<Form.Control.Feedback type="invalid">
-									{errors.city}
-								</Form.Control.Feedback>
+								<CityApi setFieldValue={setFieldValue} />
 							</Form.Group>
 						</Row>
 						<Button type="submit" disabled={isSubmitting}>
